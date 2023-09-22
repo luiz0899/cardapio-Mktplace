@@ -18,7 +18,7 @@ import br.com.senai.cardapiosmktplaceapi.service.CardapioService;
 public class CardapioServiceProxy implements CardapioService {
 	
 	@Autowired
-	@Qualifier("cardapiosServiceImpl")
+	@Qualifier("cardapioServiceImpl")
 	private CardapioService service ;
 
 	@Override

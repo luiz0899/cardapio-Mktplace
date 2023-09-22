@@ -39,7 +39,7 @@ public interface RestauranteService {
 			Pageable pageable 
 			);
 	
-	public Categoria buscarPor(
+	public Restaurante buscarPor(
 			@NotNull(message = "o id para busca é obrigatorio")
 			@Positive(message = "o id para busca deve ser positivo")
 			Integer id

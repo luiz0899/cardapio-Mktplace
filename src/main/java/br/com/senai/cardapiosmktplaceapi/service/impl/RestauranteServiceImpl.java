@@ -69,14 +69,14 @@ public class RestauranteServiceImpl implements RestauranteService {
 	}
 
 	@Override
-	public Categoria buscarPor( Integer id) {
+	public Restaurante buscarPor( Integer id) {
 		
 		Restaurante restauranteEncontrado = repository.buscarPor(id);
 		Preconditions.checkNotNull(restauranteEncontrado,
 				"Não foi encontrado restaurante para o id informado");
 		Preconditions.checkArgument(restauranteEncontrado.isAtivo(),
 				"O restaurante está inativo");
-		return null;
+		return restauranteEncontrado;
 	}
 
 	@Override

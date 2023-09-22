@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,10 @@ import br.com.senai.cardapiosmktplaceapi.repository.OpcoesRepository;
 import br.com.senai.cardapiosmktplaceapi.repository.RestaurantesRepository;
 import br.com.senai.cardapiosmktplaceapi.repository.SecaoRespository;
 import br.com.senai.cardapiosmktplaceapi.service.CardapioService;
+import br.com.senai.cardapiosmktplaceapi.service.RestauranteService;
 
 @Service
-public class CardapioSeviceImpl implements CardapioService {
+public class CardapioServiceImpl implements CardapioService {
 
 	@Autowired
 	private OpcoesRepository opcoesRepository ;
@@ -41,6 +43,10 @@ public class CardapioSeviceImpl implements CardapioService {
 	
 	@Autowired
 	private RestaurantesRepository restaurantesRepository ;
+	
+	@Autowired
+	@Qualifier("restauranteServiceImpl")
+	private RestauranteService restauranteService ;
 	
 	private Restaurante getRestaurantePor(NovoCardapio novoCardapio ) {
 		
@@ -75,7 +81,7 @@ public class CardapioSeviceImpl implements CardapioService {
 		Preconditions.checkArgument(opcao.getRestaurante().equals(restaurante),
 				"A opção " + idDaOpcao + " não pertence ao cardápio do restaurante");
 		
-		return null ;
+		return opcao ;
 	}
 	
 	private void validarDuplicidadeEm(List<NovaOpcaoCardapio> opcaoCardapios){
@@ -96,6 +102,7 @@ public class CardapioSeviceImpl implements CardapioService {
 	
 	@Override
 	public Cardapio inserir( NovoCardapio novoCardapio) {
+		
 		Restaurante restaurante = getRestaurantePor(novoCardapio);
 		Cardapio cardapio = new Cardapio();
 		cardapio.setNome((novoCardapio.getNome()));
@@ -112,23 +119,26 @@ public class CardapioSeviceImpl implements CardapioService {
 			opcaoCardapio.setCardapio(cardapioSalvo);
 			opcaoCardapio.setOpcao(opcao);
 			opcaoCardapio.setSecao(secao);
-			opcaoCardapio.setPreco(novaOpcao.getPreço());
+			opcaoCardapio.setPreco(novaOpcao.getPreco());
 			opcaoCardapio.setRecomendado(novaOpcao.getRecomendado());
 			cardapioSalvo.getOpcoes().add(opcaoCardapio);
 			this.repository.saveAndFlush(cardapioSalvo);
 			
 		}
 		
-		
 		return repository.buscarPor(cardapioSalvo.getId());
 	}
 
 	@Override
 	public Cardapio alterar( CardapioSalvo cardapioSalvo) {
-	
-		Restaurante restaurante = restaurantesRepository.buscarPor(
+		
+		Restaurante restaurante = restauranteService.buscarPor(
 				cardapioSalvo.getRestaurante().getId());
 		Cardapio cardapio = repository.buscarPor(cardapioSalvo.getId());
+		Preconditions.checkNotNull(cardapio,
+				"não existe cardapio vinculado ao id");
+		Preconditions.checkArgument(restaurante.equals(cardapio.getRestaurante())
+				, "O restaurante do vcardapio não pode ser alterado");
 		cardapio.setNome(cardapioSalvo.getNome());
 		cardapio.setDescricao(cardapioSalvo.getDescricao());
 		cardapio.setRestaurante(restaurante);
@@ -141,19 +151,21 @@ public class CardapioSeviceImpl implements CardapioService {
 	private void atualizarPrecoDas(List<OpcaoCardapio> opcaoCardapios) {
 		
 		for (OpcaoCardapio opcaoCardapio : opcaoCardapios) {
-			if(opcaoCardapio.getOpcao().isEmPromocao());
 			
-			BigDecimal divisor = new BigDecimal(100);
-			BigDecimal percentualDeDesconto = opcaoCardapio.getOpcao()
-					.getPercenrualDeDesconto();
-			
-			BigDecimal valorDescontado = opcaoCardapio.getPreco().
-					multiply(percentualDeDesconto).divide(divisor);
-			
-			BigDecimal preco = opcaoCardapio.getPreco()
-					.subtract(valorDescontado).setScale(2,RoundingMode.CEILING);
-			
-			opcaoCardapio.setPreco(preco);
+			if(opcaoCardapio.getOpcao().isEmPromocao()) {
+				
+				BigDecimal divisor = new BigDecimal(100);
+				BigDecimal percentualDeDesconto = opcaoCardapio.getOpcao()
+						.getPercenrualDeDesconto();
+				
+				BigDecimal valorDescontado = opcaoCardapio.getPreco().
+						multiply(percentualDeDesconto).divide(divisor);
+				
+				BigDecimal preco = opcaoCardapio.getPreco()
+						.subtract(valorDescontado).setScale(2,RoundingMode.CEILING);
+				
+				opcaoCardapio.setPreco(preco);
+			}			
 			
 		}
 		
@@ -185,9 +197,12 @@ public class CardapioSeviceImpl implements CardapioService {
 	
 	@Override
 	public void atualizarStatusPor(Integer id,Status status) {
-	
+		
+		Cardapio cardapioEncontrado = repository.buscarPor(id);
+		Preconditions.checkNotNull(cardapioEncontrado,
+				"não foi encontrado id para o cardapio enformado ");
 		Cardapio cardapio = buscarPor(id);
-		Preconditions.checkNotNull(cardapio.getStatus() == status , 
+		Preconditions.checkNotNull(cardapio.getStatus() != status , 
 				"O status do cardapio tem que ser informado ");
 		
 		this.repository.atualizarPor(id, status);

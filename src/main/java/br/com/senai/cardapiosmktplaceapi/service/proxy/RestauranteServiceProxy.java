@@ -5,12 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import br.com.senai.cardapiosmktplaceapi.entity.Categoria;
 import br.com.senai.cardapiosmktplaceapi.entity.Restaurante;
 import br.com.senai.cardapiosmktplaceapi.entity.enums.Status;
 import br.com.senai.cardapiosmktplaceapi.service.RestauranteService;
-
+@Service
 public class RestauranteServiceProxy implements RestauranteService {
 
 	@Autowired
@@ -36,7 +37,7 @@ public class RestauranteServiceProxy implements RestauranteService {
 	}
 
 	@Override
-	public Categoria buscarPor(Integer id) {
+	public Restaurante buscarPor(Integer id) {
 		return service.buscarPor(id);
 	}
 
