@@ -46,7 +46,7 @@ public class InitApp {
 			
 		this.opcoesRepository.atualizarPor(id,status);
 		System.out.println("aq");*/
-			
+			/*aquiii*/
 		};
 	}
 	
