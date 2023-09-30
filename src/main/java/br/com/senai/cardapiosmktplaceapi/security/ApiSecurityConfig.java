@@ -39,6 +39,7 @@ public class ApiSecurityConfig {
 	
 	}
 	
+	@Bean
 	public AuthenticationManager authenticationManager(
 		
 			AuthenticationConfiguration authConfing ) throws Exception {
@@ -46,15 +47,18 @@ public class ApiSecurityConfig {
 	
 	}
 	
+	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		
 		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
 		authenticationProvider.setUserDetailsService(service);
 		authenticationProvider.setPasswordEncoder(passwordEncoder());
-		return authenticationProvider();
+		return authenticationProvider;
+		
 	}
 	
-	private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource() {
+	@Bean
+	public UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource() {
 		
 		CorsConfiguration corsConfiguration = new CorsConfiguration();
 		corsConfiguration.applyPermitDefaultValues();
@@ -68,6 +72,7 @@ public class ApiSecurityConfig {
 		
 	}
 	
+	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		
 		http
